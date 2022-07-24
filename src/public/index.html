@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Chat</title>
+
+     <!-- Utils import from cdn -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+    <!-- Content -->
+<body >
+    <div class="bg-indigo-600 flex h-screen w-full items-center justify-center ">
+         <!-- Form -->
+        <form id="chat" class="w-2/6 flex bg-white p-10 justify-center items-center shadow-md rounded-lg">
+            <div class="flex flex-col p-5 ">
+                <h2 class="w-96 p-2 text-indigo-500 font-extrabold text-4xl mb-8 text-center">Web Chat</h2>
+
+                 <!-- Input username -->
+                <input class="w-96 p-2 bg-slate-300 rounded-lg text-xl text-center hover:rounded-3xl" type="text" name="username" placeholder="Digite seu username">
+
+                 <!-- Message box -->
+                <div class="w-96 p-10 mt-5 h-96 text-xl text-[#9CA3AF] bg-slate-300 messages rounded-lg"></div>
+
+                 <!-- Input message -->
+                <input class="w-96 p-2 mt-5 bg-slate-300 rounded-lg text-xl text-center hover:rounded-3xl" type="text" name="message" placeholder="Digite sua menssagem">
+
+                 <!-- Button submit -->
+                <button class="w-96 bg-indigo-500 rounded-lg mt-5 p-2 text-xl font-medium text-[whitesmoke] hover:rounded-3xl" type="submit">Enviar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Scripts -->
+    <script type="text/javascript">
+        var socket = io("http://localhost:3000");
+
+        function renderMessage(message) {
+            $(".messages").append('<div class="message"><strong>'+ message.username +'</strong>: '+ message.message +'</div>');
+        }
+
+        socket.on("previousMessage", function(messages){
+            for(message of messages) {
+                renderMessage(message);
+            }
+        });
+
+        socket.on("receivedMessage", function(message) {
+            renderMessage(message);
+        });
+
+        $("#chat").submit(function(event) {
+            event.preventDefault();
+
+            var username = $("input[name=username]").val();
+            var message = $("input[name=message]").val();
+
+            if(username.length && message.length) {
+                var messageObj = {
+                    username: username,
+                    message: message,
+                };
+
+                renderMessage(messageObj);
+                socket.emit("sendMessage", messageObj);
+            }
+
+        });
+
+    </script>
+
+</body>
+</html>
